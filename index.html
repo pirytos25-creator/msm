@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📜 Wielka Biblioteka Arkanów</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=Noto+Serif+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a0f0a; --bg2:#2a1810; --bg3:#3d2418;        
+  --parchment:#f4e4c1; --parchment2:#e8d4a3; --parchment3:#d4b87a; 
+  --ink:#2a1810; --ink2:#4a2f1d;       
+  
+  --theme-main:#d4af37; --theme-glow:#f5d97a; --theme-dark:#8b6914; --theme-bg:#2a1810;
+  
+  --crimson:#8b1a1a; --crimson-l:#c62d2d;  
+  --arcane:#8b5cf6; --arcane-l:#a855f7; --arcane-bg:#2e1065;
+  --mana:#06b6d4; --mana-l:#22d3ee;
+  
+  --border:#5a3820; --border-gold:#8b6914;
+  --radius:10px; --radius-lg:16px;
+}
+
+body{
+  font-family:'Lora', Georgia, serif;
+  background:
+    radial-gradient(ellipse at top right, rgba(139,92,246,.15) 0%, transparent 50%),
+    radial-gradient(ellipse at top left, rgba(139,26,26,.15) 0%, transparent 50%),
+    linear-gradient(180deg, #0b050f 0%, #110817 60%, #05020a 100%);
+  background-attachment:fixed; color:var(--parchment);
+  min-height:100vh; display:flex; flex-direction:column; overflow-x:hidden;
+}
+
+body::before{
+  content:''; position:fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(212,175,55,.05) 0%, transparent 1%),
+    radial-gradient(circle at 80% 40%, rgba(139,92,246,.05) 0%, transparent 1.5%);
+}
+
+.body-locked { overflow: hidden; height: 100vh; }
+
+/* ==========================================================================
+   FAZA 1: WROTA ZAMKU (Cinematic Gates)
+   ========================================================================== */
+#cinematic-gates {
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; overflow: hidden; background: #000;
+}
+
+.gate-half {
+  width: 50%; height: 100%; position: relative;
+  background-image: url('https://image.pollinations.ai/prompt/Breathtaking%20photorealistic%20fantasy%20isekai%20magic%20palace%20interior%20glowing%20runes%20grand%20library%20gates%20epic%20lighting%20masterpiece?width=1920&height=1080&nologo=true');
+  background-size: 200% 100%; background-repeat: no-repeat;
+  transition: transform 3s cubic-bezier(0.5, 0.0, 0.1, 1);
+  box-shadow: inset 0 0 120px rgba(0,0,0,0.95);
+}
+.gate-left { background-position: left center; border-right: 4px solid rgba(212,175,55,0.8); }
+.gate-right { background-position: right center; border-left: 4px solid rgba(212,175,55,0.8); }
+
+.gate-content {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 10; pointer-events: none;
+  background: radial-gradient(circle, rgba(0,0,0,0.7) 0%, transparent 80%);
+  transition: opacity 1.5s ease;
+}
+
+.gate-title {
+  font-family: 'Cinzel', serif; font-size: 5.5rem; font-weight: 900; color: #d8b4fe;
+  text-shadow: 0 0 30px #9333ea, 0 10px 30px #000, 0 0 60px rgba(168,85,247,0.5);
+  margin-bottom: 50px; text-align: center; text-transform: uppercase; letter-spacing: 5px;
+}
+
+.gate-btn {
+  background: rgba(88,28,135,0.5); border: 2px solid #c084fc;
+  color: #fff; padding: 20px 60px; font-size: 1.4rem;
+  font-family: 'Cinzel', serif; font-weight: 700; cursor: pointer; border-radius: 6px;
+  box-shadow: inset 0 0 20px rgba(168,85,247,0.5), 0 0 40px rgba(147,51,234,0.8);
+  text-transform: uppercase; letter-spacing: 4px; transition: all 0.3s;
+  pointer-events: auto; backdrop-filter: blur(5px);
+}
+.gate-btn:hover { background: rgba(147,51,234,0.8); box-shadow: 0 0 60px #d8b4fe, 0 0 20px #fff; transform: scale(1.05); }
+
+.gate-left.open { transform: translateX(-100%); }
+.gate-right.open { transform: translateX(100%); }
+.gate-content.fade { opacity: 0; }
+
+/* KONTROLA AUDIO */
+.audio-control {
+  position: fixed; left: 20px; top: 50%; transform: translateY(-50%);
+  z-index: 99995; background: rgba(11, 5, 15, 0.8);
+  border: 2px solid var(--arcane); border-radius: 50%;
+  width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+  color: var(--arcane-l); font-size: 20px; cursor: pointer;
+  box-shadow: 0 0 15px rgba(147,51,234,0.5); transition: all 0.3s;
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.audio-control.show { opacity: 1; visibility: visible; pointer-events: auto; }
+.audio-control:hover { background: var(--arcane); color: #fff; box-shadow: 0 0 25px var(--arcane-l); transform: translateY(-50%) scale(1.1); }
+
+/* ==========================================================================
+   FAZA 2: SLAJD POWITALNY (Mistrzyni & Filary)
+   ========================================================================== */
+#intro-slide {
+  position: fixed; inset: 0; z-index: 99990;
+  background: radial-gradient(circle at center, #170a21 0%, #05020a 100%);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; transition: opacity 1.5s ease, visibility 1.5s;
+}
+
+.slide-wrapper {
+  display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 50px;
+  max-width: 1200px; width: 90%; height: 85vh;
+  background: rgba(11, 5, 15, 0.85); border: 1px solid #4c1d95;
+  border-radius: 16px; padding: 50px; box-shadow: 0 30px 60px rgba(0,0,0,0.9), inset 0 0 50px rgba(139,92,246,0.1);
+  backdrop-filter: blur(10px);
+}
+
+.slide-content { display: flex; flex-direction: column; justify-content: center; }
+.slide-content h2 { font-family: 'Cinzel', serif; font-size: 3.5rem; font-weight: 900; color: #d8b4fe; text-shadow: 0 0 20px rgba(147,51,234,0.6); margin-bottom: 20px; }
+.slide-content p.lead { font-family: 'Lora', serif; font-size: 1.2rem; color: #e9d5ff; line-height: 1.6; margin-bottom: 40px; }
+
+.pillars { display: flex; flex-direction: column; gap: 25px; margin-bottom: 50px; }
+.pillar { display: flex; align-items: flex-start; gap: 20px; }
+.pillar-icon { font-size: 2.2rem; color: #d4af37; text-shadow: 0 0 15px rgba(212,175,55,0.4); }
+.pillar-text h3 { font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: 700; color: #c084fc; margin-bottom: 5px; }
+.pillar-text p { font-family: 'Lora', serif; font-size: 1.05rem; color: #d1d5db; line-height: 1.5; }
+
+.slide-btn {
+  background: var(--theme-main); color: var(--ink); border: none;
+  padding: 18px 45px; font-size: 1.2rem; font-family: 'Cinzel', serif;
+  font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.3s;
+  align-self: flex-start; letter-spacing: 1.5px; box-shadow: 0 0 25px rgba(212,175,55,0.4);
+}
+.slide-btn:hover { background: var(--theme-glow); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(212,175,55,0.7), 0 0 15px #fff; }
+
+.slide-image {
+  border-radius: 8px; overflow: hidden; border: 2px solid #581c87;
+  box-shadow: 0 0 40px rgba(139,92,246,0.4); position: relative;
+}
+.slide-image img { width: 100%; height: 100%; object-fit: cover; }
+.slide-image::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(11,5,15,0.95), transparent 50%);
+}
+.slide-image-text {
+  position: absolute; bottom: 25px; left: 20px; right: 20px;
+  text-align: center; font-family: 'Cinzel', serif; font-weight: 700; color: #e9d5ff;
+  font-size: 1.5rem; font-style: italic; z-index: 2; text-shadow: 0 2px 4px #000;
+}
+
+/* ==========================================================================
+   FAZA 3: GŁÓWNA APLIKACJA (Dojo)
+   ========================================================================== */
+#main-app {
+  opacity: 0; visibility: hidden; transition: opacity 1.5s ease;
+  display: flex; flex-direction: column; flex: 1;
+}
+
+/* YUMI */
+.yumi{ position:fixed; bottom:20px; right:20px; z-index:100; display:flex; align-items:flex-end; gap:10px; max-width:360px; pointer-events:none; }
+.yumi .bubble{ background:linear-gradient(135deg, rgba(244,228,193,.95), rgba(232,212,163,.95)); color:var(--ink); padding:14px 18px; border-radius:18px 18px 4px 18px; font-size:14px; line-height:1.5; box-shadow:0 8px 24px rgba(0,0,0,.5), 0 0 20px rgba(212,175,55,.4); border:2px solid var(--gold); pointer-events:auto; position:relative; max-width:280px; animation:yumi-in .4s ease; font-family:'Noto Serif JP', serif; font-weight: 700;}
+@keyframes yumi-in{from{opacity:0;transform:translateY(10px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.yumi .bubble b{color:var(--crimson)}
+.yumi .bubble .close-y{ position:absolute; top:-8px;right:-8px; width:24px;height:24px; background:var(--crimson); color:#fff; border-radius:50%; display:flex;align-items:center;justify-content:center; cursor:pointer; font-size:13px; border:2px solid var(--gold); font-weight:700; }
+.yumi .avatar{ width:90px;height:110px; pointer-events:auto; cursor:pointer; filter:drop-shadow(0 5px 15px rgba(212,175,55,.4)); transition:transform .2s; }
+.yumi .avatar:hover{transform:scale(1.05) translateY(-5px)}
+.yumi.mini .bubble{display:none}
+
+/* NAV */
+nav{ position:relative; z-index:10; background:linear-gradient(180deg, #3d2418 0%, #2a1810 100%); border-bottom:2px solid var(--border-gold); display:flex; align-items:stretch; box-shadow:0 5px 25px rgba(0,0,0,.7); }
+.nav-logo{ padding:16px 26px; font-family:'Cinzel', serif; font-size:20px; font-weight:900; letter-spacing:1.5px; color:var(--theme-glow); text-shadow:0 0 15px rgba(212,175,55,.8), 1px 1px 3px #000; border-right:1px solid var(--border-gold); display:flex; align-items:center; gap:10px; }
+.nav-tabs{display:flex;flex:1;overflow-x:auto}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab{ padding:16px 20px; font-family:'Cinzel', serif; font-size:14px; font-weight:700; letter-spacing:1px; color:var(--parchment3); cursor:pointer; border-bottom:3px solid transparent; display:flex; align-items:center; gap:8px; transition:all .2s;}
+.nav-tab:hover{color:var(--theme-glow);background:rgba(212,175,55,.1); text-shadow: 0 0 10px rgba(212,175,55,.5);}
+.nav-tab.active{color:var(--theme-glow);border-bottom-color:var(--theme-main);background:rgba(212,175,55,.15); text-shadow: 0 0 15px rgba(212,175,55,.8);}
+.nav-count{background:var(--mana);color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700;}
+
+/* PAGES */
+.page{display:none;flex:1;padding:35px;position:relative;z-index:1; max-width: 1250px; margin: 0 auto; width: 100%;}
+.page.active{display:block;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-family:'Cinzel', serif;font-size:32px;font-weight:900;color:var(--theme-glow);text-shadow:0 0 15px rgba(212,175,55,.6), 2px 2px 4px rgba(0,0,0,0.8);margin-bottom:10px;letter-spacing:2px;display:flex;align-items:center;gap:12px;}
+.section-subtitle{font-family:'Lora', serif;font-size:16px;color:var(--parchment3);margin-bottom:30px;font-style:italic}
+
+/* ==========================================================================
+   LEKSYKON (ZAAWANSOWANY 3D Z ZAKŁADKAMI)
+   ========================================================================== */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:15px;align-items:center}
+.search-wrap{position:relative;flex:1;min-width:250px}
+.search-wrap input{width:100%;padding:14px 16px 14px 45px;border:1px solid var(--border-gold);border-radius:var(--radius);font-size:15px;background:rgba(244,228,193,.08);color:var(--parchment);outline:none;font-family:'Lora', serif; transition: all 0.3s;}
+.search-wrap input:focus{border-color:var(--mana-l);background:rgba(6,182,212,.12); box-shadow:0 0 15px rgba(6,182,212,.3)}
+.s-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--theme-main)}
+.filt-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.fb{padding:8px 18px;border:1px solid var(--border-gold);border-radius:20px;background:rgba(244,228,193,.05);color:var(--parchment3);font-size:14px;font-weight:700; font-family:'Cinzel', serif;cursor:pointer;transition:all .2s;}
+.fb:hover{border-color:var(--mana-l);color:var(--mana-l);background:rgba(6,182,212,.15); box-shadow: 0 0 10px rgba(6,182,212,.2);}
+.fb.active{background:var(--mana);color:#fff;border-color:var(--mana-l);font-weight:700; box-shadow:0 0 15px rgba(6,182,212,.5)}
+
+.lexicon-category-title { font-family: 'Cinzel', serif; color: var(--mana-l); font-size: 22px; font-weight: 700; margin: 40px 0 20px 0; border-bottom: 2px solid rgba(6,182,212,0.4); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(6,182,212,0.4);}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px; perspective: 1000px;}
+
+/* PIĘKNE KARTY 3D */
+.card{
+  background:linear-gradient(180deg, rgba(244,228,193,.08) 0%, rgba(244,228,193,.03) 100%);
+  border:1px solid var(--border-gold);border-radius:var(--radius-lg);
+  overflow:hidden;position:relative;transition:all .3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,175,55,.2);
+  cursor:pointer; transform-style: preserve-3d;
+}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg, transparent, var(--gold), transparent);opacity:.8}
+.card:hover{
+  border-color:var(--mana-l); transform:translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.7), 0 0 20px rgba(6,182,212,.3), inset 0 1px 0 rgba(6,182,212,.4);
+}
+.card.open{
+  border-color:var(--mana-l); background:linear-gradient(180deg, rgba(6,182,212,.15), rgba(244,228,193,.04)); 
+  box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 25px rgba(6,182,212,.5); transform:translateY(-2px);
+}
+
+.card-h{padding:20px;display:flex;align-items:center;gap:15px; position:relative; z-index:2;}
+.card-em{font-size:32px;width:55px;height:55px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex-shrink:0;border:1px solid var(--border-gold); box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
+.card-info{flex:1;min-width:0}
+.card-r{font-size:22px;font-weight:900;color:var(--theme-glow);font-family:'Noto Serif JP', serif; letter-spacing: 1px; text-shadow: 0 0 8px rgba(212,175,55,0.4);}
+.card-pl{font-size:14px;color:var(--parchment2);margin-top:4px}
+.icon-btn{width:42px;height:42px;border-radius:10px;border:1px solid var(--border-gold);background:rgba(244,228,193,.08);color:var(--parchment);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s; font-size: 18px;}
+.icon-btn:hover{background:rgba(6,182,212,.2);border-color:var(--mana-l);transform:scale(1.1); box-shadow: 0 0 10px rgba(6,182,212,0.4);}
+.icon-btn.faved{background:rgba(212,175,55,.3);border-color:var(--theme-main);color: var(--theme-glow); box-shadow: 0 0 15px rgba(212,175,55,0.5);}
+
+/* Rozwijane zakładki (Powrót Arcydzieła) */
+.card-body{display:none; border-top:1px solid var(--border-gold); padding:0 20px 20px; background:rgba(0,0,0,.4); position:relative; z-index:1;}
+.card.open .card-body{display:block; animation:fadeIn .4s;}
+.c-tabs{display:flex;gap:5px;padding:15px 0 10px;border-bottom:1px solid rgba(212,175,55,.2)}
+.c-tab{padding:8px 14px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;color:var(--parchment3);font-family:'Cinzel', serif;letter-spacing:1px; transition:all 0.2s; border: 1px solid transparent;}
+.c-tab:hover{background:rgba(212,175,55,.1);color:var(--theme-glow); border-color: rgba(212,175,55,.3);}
+.c-tab.active{background:var(--theme-main);color:var(--ink);font-weight:900; box-shadow: 0 0 10px rgba(212,175,55,0.4);}
+.c-tc{display:none;padding-top:15px; font-size: 15px; line-height: 1.7; font-family: 'Lora', serif;}.c-tc.active{display:block}
+
+.info-lbl{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--theme-main);margin-bottom:5px;margin-top:15px;font-family:'Cinzel', serif;}
+.info-val{color:var(--parchment); font-style: italic;}
+.fun-box{background:rgba(6,182,212,.1);border:1px solid var(--mana);border-radius:8px;padding:15px;font-size:15px;color:var(--mana-l);line-height:1.6;margin-top:5px; box-shadow: inset 0 0 10px rgba(6,182,212,0.1);}
+.ex-box{background:rgba(244,228,193,.05);border:1px solid var(--border-gold);border-radius:8px;padding:16px;margin-top:8px}
+.ex-jp{font-size:18px;font-weight:700;color:var(--theme-glow);font-family:'Noto Serif JP', serif; letter-spacing: 0.5px;}
+.ex-pl{font-size:14px;color:var(--parchment2);margin-top:6px;font-style:italic}
+
+
+/* ==========================================================================
+   KSIĘGA ARKANÓW - NANO BANANA PRO (Otwarta 3D Księga)
+   ========================================================================== */
+.grimoire-open {
+  display: flex; width: 100%; max-width: 1100px; margin: 0 auto;
+  background: #160a05; padding: 15px; border-radius: 12px; 
+  border: 3px solid var(--arcane);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.95), inset 0 0 20px rgba(0,0,0,1);
+  position: relative; transition: border-color 0.8s, box-shadow 0.8s;
+}
+.grimoire-open.theme-fire { border-color: #ef4444; box-shadow: 0 40px 80px rgba(0,0,0,0.95), 0 0 30px rgba(239,68,68,0.2), inset 0 0 20px rgba(0,0,0,1); }
+.grimoire-open.theme-nature { border-color: #10b981; box-shadow: 0 40px 80px rgba(0,0,0,0.95), 0 0 30px rgba(16,185,129,0.2), inset 0 0 20px rgba(0,0,0,1); }
+
+/* Strony (Lewa Spis Treści, Prawa Treść) */
+.g-page {
+  width: 50%; min-height: 650px;
+  background: var(--parchment) url('https://www.transparenttextures.com/patterns/old-wall.png');
+  padding: 45px; position: relative;
+  box-shadow: inset 0 0 50px rgba(139,105,20,0.15);
+  transition: background-color 0.8s;
+}
+.g-page-left { 
+  border-radius: 6px 0 0 6px; 
+  border: 1px solid var(--border-gold); border-right: none;
+  box-shadow: inset 15px 0 30px rgba(0,0,0,0.05);
+}
+.g-page-right { 
+  border-radius: 0 6px 6px 0; 
+  border: 1px solid var(--border-gold); border-left: none;
+  box-shadow: inset -15px 0 30px rgba(0,0,0,0.05);
+  overflow-y: auto; max-height: 700px;
+}
+.g-page-right::-webkit-scrollbar { width: 8px; }
+.g-page-right::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 4px; }
+
+/* Kolorowanie stron motywem */
+.grimoire-open.theme-fire .g-page-right { background-color: #fde8e8; border-color: #fca5a5; }
+.grimoire-open.theme-nature .g-page-right { background-color: #e8fdf0; border-color: #6ee7b7; }
+
+/* Trójwymiarowy Grzbiet Księgi w środku */
+.g-spine {
+  position: absolute; top: 15px; bottom: 15px; left: 50%; width: 70px;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.5) 70%, transparent);
+  pointer-events: none; z-index: 10;
+}
+
+/* Wnętrze lewej strony (Spis treści) */
+.g-toc-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--ink); text-align: center; margin-bottom: 35px; border-bottom: 2px solid var(--theme-dark); padding-bottom: 15px; }
+.toc-btn {
+  display: block; width: 100%; text-align: left; padding: 22px; margin-bottom: 18px;
+  background: rgba(0,0,0, 0.03); border: 1px solid var(--theme-dark); border-radius: 8px;
+  font-family: 'Cinzel', serif; font-size: 17px; color: var(--ink); font-weight: 700;
+  cursor: pointer; transition: all 0.3s; position: relative;
+}
+.toc-btn::after { content:'✦'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--theme-dark); font-size: 22px; opacity: 0.6;}
+.toc-btn:hover, .toc-btn.active-chap { background: rgba(0,0,0, 0.08); transform: translateX(8px); box-shadow: inset 4px 0 0 var(--theme-dark); }
+.toc-btn.active-chap { border-color: var(--crimson); box-shadow: inset 4px 0 0 var(--crimson); color: var(--crimson); }
+
+/* Wnętrze prawej strony (Treść) z animacją */
+#g-content-area { animation: fadeContent 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes fadeContent { from { opacity: 0; transform: translateX(20px); filter: blur(3px); } to { opacity: 1; transform: translateX(0); filter: blur(0); } }
+
+.book-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 250px; color: var(--theme-dark); opacity: 0.04; font-family: 'Noto Serif JP', serif; pointer-events: none; z-index: 0; }
+.b-chapter { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--ink); text-align: center; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; position:relative; z-index:2;}
+.a-entry { margin-bottom: 40px; display: flex; gap: 25px; position: relative; padding-bottom: 25px; border-bottom: 1px dashed rgba(0,0,0,0.2); z-index:2;}
+.a-rune { font-size: 55px; font-weight: 900; color: var(--theme-dark); font-family: 'Noto Serif JP', serif; flex-shrink: 0; width: 65px; text-align: center; line-height: 1; text-shadow: 2px 2px 4px rgba(0,0,0,0.15); transition: color 1s;}
+.a-content { flex: 1; }
+.a-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+.a-desc { font-size: 16px; color: var(--ink2); line-height: 1.6; margin-bottom: 15px; font-weight: 600;}
+.a-ex { background: rgba(0,0,0, 0.04); padding: 15px 18px; border-left: 4px solid var(--theme-dark); font-size: 16px; margin-bottom: 12px; border-radius: 0 8px 8px 0; color: var(--ink);}
+.a-akemi { background: rgba(139,92,246, 0.08); padding: 15px 18px; border-left: 4px solid var(--arcane); font-size: 15px; color: var(--arcane-bg); font-style: italic; border-radius: 0 8px 8px 0;}
+
+/* Magiczne Cząsteczki w Księdze */
+.magic-particles { position: absolute; inset: 0; pointer-events: none; z-index: 15; overflow: hidden; display: flex; justify-content: center; }
+.m-particle { position: absolute; opacity: 0; bottom: 50%; } 
+.theme-fire .m-particle { background: #fca5a5; box-shadow: 0 0 15px #ef4444; width: 6px; height: 6px; border-radius: 50%; }
+.theme-nature .m-particle { background: #6ee7b7; border-radius: 0 50% 0 50%; width: 12px; height: 12px; }
+.theme-gold .m-particle { background: #f5d97a; box-shadow: 0 0 10px #d4af37; width: 5px; height: 5px; border-radius: 50%; }
+.is-bursting .theme-fire .m-particle { animation: fireBurst 1.2s ease-out forwards; }
+.is-bursting .theme-nature .m-particle { animation: leafBurst 1.5s ease-out forwards; }
+.is-bursting .theme-gold .m-particle { animation: goldBurst 1.2s ease-out forwards; }
+@keyframes fireBurst { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(calc(var(--rx) * 300px), calc(var(--ry) * 400px)) scale(0); opacity: 0; } }
+@keyframes leafBurst { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(calc(var(--rx) * 300px), calc(var(--ry) * 400px)) rotate(360deg); opacity: 0; } }
+@keyframes goldBurst { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(calc(var(--rx) * 400px), calc(var(--ry) * 400px)) scale(0); opacity: 0; } }
+
+@media(max-width:900px){
+  .grimoire-open { flex-direction: column; }
+  .g-page { width: 100%; border-radius: 8px; min-height: auto;}
+  .g-spine { display: none; }
+}
+
+
+/* ZDANIA — Kreator */
+.builder{background:linear-gradient(180deg, rgba(244,228,193,.06) 0%, rgba(244,228,193,.02) 100%);border:1px solid var(--border-gold);border-radius:var(--radius-lg);padding:25px;margin-bottom:20px;box-shadow:inset 0 1px 0 rgba(212,175,55,.15);position:relative}
+.builder h2{font-family:'Cinzel', serif;font-size:22px;font-weight:900;margin-bottom:18px;color:var(--gold-l);display:flex;align-items:center;gap:12px;}
+.slot-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;min-height:70px;align-items:center;background:rgba(0,0,0,.4);border:1px solid var(--border-gold);border-radius:var(--radius);padding:15px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5);}
+.slot{padding:10px 16px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid;background:var(--parchment2);color:var(--ink);font-family:'Noto Serif JP', serif; transition:all 0.2s;}
+.slot:hover{transform:translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
+.slot .rm{font-size:13px;opacity:.6;margin-left:4px;padding:0 5px; border-radius: 50%; background: rgba(0,0,0,0.1); width: 22px; height: 22px; display:flex; align-items:center; justify-content:center;}
+.slot .rm:hover { background: var(--crimson); color: white; opacity: 1; }
+.word-bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.word-chip{padding:8px 16px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:1px solid var(--border-gold);background:rgba(244,228,193,.1);font-family:'Noto Serif JP', serif; transition: all 0.2s;}
+.word-chip:hover{transform:translateY(-3px);box-shadow:0 6px 15px rgba(212,175,55,.3); background:rgba(212,175,55,.2);}
+.cat-label{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--mana-l);margin-bottom:12px;margin-top:25px;font-family:'Cinzel', serif;}
+.result-box{background:linear-gradient(180deg, rgba(212,175,55,.1), rgba(212,175,55,.04));border:1px solid var(--gold);border-radius:var(--radius);padding:22px;margin-top:18px;box-shadow:inset 0 0 20px rgba(212,175,55,.08)}
+.result-jp{font-size:26px;font-weight:900;color:var(--gold-l);margin-bottom:8px;font-family:'Noto Serif JP', serif;}
+.result-pl{font-size:16px;color:var(--parchment2);font-style:italic; font-weight:600;}
+.result-acts{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+.btn{padding:12px 20px;border-radius:var(--radius);border:1px solid var(--border-gold);background:rgba(244,228,193,.08);color:var(--parchment);font-size:14px;cursor:pointer;font-family:'Cinzel', serif; font-weight:700; display:flex; align-items:center; gap:8px; transition:all 0.2s;}
+.btn:hover{background:rgba(212,175,55,.15);border-color:var(--theme-main)}
+.btn.primary{background:var(--theme-main);color:var(--ink);border-color:var(--theme-main);}
+.btn.primary:hover{background:var(--theme-glow); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212,175,55,0.4);}
+.btn.arcane{background:var(--arcane);color:#fff;border-color:var(--arcane-l);}
+.btn.arcane:hover{background:var(--arcane-l);box-shadow:var(--shadow-arcane); transform: translateY(-2px);}
+.btn.danger{background:rgba(198,45,45,.2);color:#f5a5a5;border-color:var(--crimson)}
+.correction-box{background:rgba(34,197,94,.1);border:1px solid var(--elven-l);border-radius:8px;padding:18px 22px;margin-top:18px;color:var(--parchment);}
+.correction-box .ttl{font-family:'Cinzel', serif;color:var(--elven-l);font-size:15px;font-weight:900;margin-bottom:10px;text-transform:uppercase}
+
+/* CHAT — Mistrzyni Akemi w Pełnej Krasie */
+.chat-container-main { display: flex; gap: 25px; align-items: stretch; max-width: 1050px; margin: 0 auto; height:calc(100vh - 160px); }
+.akemi-portrait {
+  flex: 0 0 320px; background: var(--bg2); border: 2px solid var(--arcane); border-radius: var(--radius-lg);
+  overflow: hidden; position: relative; display: flex; flex-direction: column;
+  animation: floatMagini 6s ease-in-out infinite; box-shadow: 0 0 40px rgba(139,92,246, 0.5);
+}
+@keyframes floatMagini { 0%, 100% { transform: translateY(0); box-shadow: 0 0 30px rgba(139,92,246, 0.4); } 50% { transform: translateY(-10px); box-shadow: 0 15px 50px rgba(139,92,246, 0.7); } }
+.akemi-portrait img { width: 100%; height: 100%; object-fit: cover; border-bottom: 2px solid var(--arcane); }
+.akemi-name-tag { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(46,16,101,1), rgba(46,16,101,0.7)); padding: 20px 15px; text-align: center; border-top: 1px solid var(--arcane-l); }
+.akemi-name-tag h3 { font-family: 'Cinzel', serif; color: var(--arcane-l); font-size: 22px; font-weight:900; margin-bottom: 4px; letter-spacing: 1px;}
+.akemi-name-tag p { font-size: 14px; color: var(--parchment2); font-style: italic; }
+
+.chat-layout{flex: 1; display:flex;flex-direction:column; background:linear-gradient(180deg, rgba(244,228,193,.04), rgba(244,228,193,.02));border:2px solid var(--arcane);border-radius:var(--radius-lg);overflow:hidden;}
+.chat-msgs{flex:1;overflow-y:auto;padding:25px;display:flex;flex-direction:column;gap:18px}
+.msg{display:flex;gap:15px;max-width:85%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-bubble{padding:14px 20px;border-radius:18px;font-size:16px;line-height:1.7;}
+.msg.bot .msg-bubble{background:linear-gradient(135deg, rgba(139,92,246,.15), rgba(0,0,0,.3));border:1px solid var(--arcane);color:var(--parchment);border-radius:4px 18px 18px 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
+.msg.user .msg-bubble{background:linear-gradient(135deg, var(--mana-bg), var(--mana));color:#fff;border-radius:18px 4px 18px 18px;border:1px solid var(--mana-l); box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
+.msg-avatar{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:2px solid var(--border-gold); overflow: hidden;}
+.msg-avatar img { width: 100%; height: 100%; object-fit: cover;}
+.msg.bot .msg-avatar{background:var(--arcane-bg); border-color:var(--arcane-l)}
+.msg.user .msg-avatar{background:var(--mana-bg); border-color:var(--mana-l)}
+
+.quick-btns-container { border-top:1px solid var(--arcane); padding: 15px; background: rgba(0,0,0,0.4); }
+.quick-btns-scroll { display:flex;gap:10px;overflow-x:auto;flex-shrink:0; padding-bottom: 8px; }
+.quick-btns-scroll::-webkit-scrollbar { height: 6px; }
+.qb{padding:10px 18px; border:1px solid var(--border-gold);border-radius:20px;font-size:14px; font-weight:600; cursor:pointer;background:rgba(244,228,193,.05);color:var(--parchment2);white-space:nowrap; transition: all 0.2s;}
+.qb:hover{border-color:var(--arcane-l);color:var(--arcane-l);background:rgba(139,92,246,.15); transform: translateY(-2px);}
+
+.chat-input-row{padding:18px;border-top:1px solid var(--arcane);display:flex;gap:12px;background:rgba(0,0,0,.6);}
+.chat-input{flex:1;padding:14px 18px;border:1px solid var(--border-gold);border-radius:var(--radius);font-size:16px;resize:none;max-height:120px;outline:none;background:rgba(244,228,193,.08);color:var(--parchment); font-family: 'Lora', serif;}
+.chat-input:focus{border-color:var(--arcane-l);background:rgba(139,92,246,.15)}
+.chat-send{padding:14px 25px;background:var(--arcane);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-weight:900;font-family:'Cinzel', serif; font-size: 15px; transition: all 0.2s;}
+.chat-send:hover{background:var(--arcane-l); box-shadow: 0 0 20px var(--arcane-l);}
+
+/* ULUBIONE */
+.fav-tabs{display:flex;gap:10px;margin-bottom:25px;border-bottom:1px solid var(--border-gold);padding-bottom:10px}
+.fav-tab{padding:12px 25px;border-radius:8px 8px 0 0;font-family:'Cinzel', serif;font-size:16px;font-weight:900;cursor:pointer;color:var(--parchment3);background:rgba(244,228,193,.03);border:1px solid transparent;}
+.fav-tab.active{color:var(--mana-l);background:rgba(6,182,212,.15);border-color:var(--mana-l);border-bottom-color:transparent}
+
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,.3)}
+::-webkit-scrollbar-thumb{background:var(--border-gold);border-radius:5px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+
+@media(max-width:900px){
+  .chat-container-main { flex-direction: column; height: auto; }
+  .akemi-portrait { display: none; }
+  .chat-layout { height: calc(100vh - 120px); }
+  .intro-title { font-size: 3rem; }
+  .gate-title { font-size: 3.5rem; }
+}
+</style>
+</head>
+<body class="body-locked">
+
+<!-- MROCZNY AMBIENT AUDIO (TWÓJ PLIK) -->
+<audio id="bg-ambient" loop>
+    <source src="The_Keeper_s_Ledger.mp3" type="audio/mpeg">
+</audio>
+
+<!-- KONTROLKA AUDIO -->
+<div class="audio-control" id="audio-ctrl" onclick="toggleAudio()">
+  <i class="fa-solid fa-volume-high"></i>
+</div>
+
+<!-- FAZA 1: WROTA ZAMKU -->
+<div id="cinematic-gates">
+  <div class="gate-half gate-left" id="gate-left"></div>
+  <div class="gate-half gate-right" id="gate-right"></div>
+  <div class="gate-content" id="gate-content">
+    <h1 class="gate-title">Pałac Magii<br>Nihongo</h1>
+    <button class="gate-btn" onclick="openLibraryGates()">Otwórz Wrota</button>
+  </div>
+</div>
+
+<!-- FAZA 2: SLAJD POWITALNY (Mistrzyni & Filary) -->
+<div id="intro-slide">
+  <div class="slide-wrapper">
+    <div class="slide-content">
+      <h2>Filary Praw Magii</h2>
+      <p class="lead">Przekroczyłeś próg. Zanim zaczniesz studiować zaklęcia w Sali Alchemicznej, musisz poznać fundamenty naszej wiedzy.</p>
+      <div class="pillars">
+        <div class="pillar">
+          <div class="pillar-icon"><i class="fa-solid fa-scroll"></i></div>
+          <div class="pillar-text"><h3>Leksykon Słów</h3><p>Zbiór zapomnianych glifów i słów mocy. Poszeregowane tematycznie runy pozwolą ci nazywać rzeczy w nowym świecie.</p></div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon"><i class="fa-solid fa-book-journal-whills"></i></div>
+          <div class="pillar-text"><h3>Księga Arkanów</h3><p>Święte reguły składni. Poznaj potęgę złotych partykuł i naucz się władzy nad czasem.</p></div>
+        </div>
+      </div>
+      <button class="slide-btn" onclick="enterMainHall()">Wejdź do Głównej Sali</button>
+    </div>
+    <div class="slide-image">
+      <img src="https://image.pollinations.ai/prompt/Dark%20fantasy%20anime%20female%20wizard%20shadows%20purple%20magic%20intricate%20details%20masterpiece%20dark%20aesthetic%20witch%20hat?width=800&height=1000&nologo=true" alt="Mistrzyni">
+      <div class="slide-image-text">Mistrzyni Akemi oczekuje...</div>
+    </div>
+  </div>
+</div>
+
+<!-- FAZA 3: GŁÓWNA APLIKACJA -->
+<div id="main-app">
+  <nav>
+    <div class="nav-logo">📜 ARCANA</div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="showPage('slownik')">📚 Leksykon <span class="nav-count" id="nav-count-dict" style="background:var(--mana);border-color:var(--mana-l)">...</span></div>
+      <div class="nav-tab" onclick="showPage('gramatyka')">✦ Arkana</div>
+      <div class="nav-tab" onclick="showPage('zdania')">✏️ Kreator</div>
+      <div class="nav-tab" onclick="showPage('chat')">🔮 Mistrzyni</div>
+      <div class="nav-tab" onclick="showPage('ulubione')">⭐ Skarbiec <span class="nav-count" id="fav-count">0</span></div>
+    </div>
+  </nav>
+
+  <!-- LEKSYKON -->
+  <div class="page active" id="page-slownik">
+    <div class="section-title">📚 Leksykon Zapomnianych Słów</div>
+    <div class="section-subtitle">Antyczne glify poszeregowane wedle przeznaczenia. Kliknij kartę, aby poznać sekrety!</div>
+    <div class="toolbar">
+      <div class="search-wrap"><span class="s-icon">🔍</span><input type="text" id="search" placeholder="Szukaj po polsku lub romaji..." oninput="renderGrid()"></div>
+    </div>
+    <div class="filt-row" id="filt-row"></div>
+    <div class="stats-line" id="stats-line"></div>
+    <div id="grid-container"></div>
+  </div>
+
+  <!-- GRAMATYKA — ROZŁOŻONA KSIĘGA ARKANÓW -->
+  <div class="page" id="page-gramatyka">
+    <div class="section-title">✦ Księga Arkanów</div>
+    <div class="section-subtitle">Studiuj święte reguły składni. Zmiana rozdziału zaktualizuje prawą stronę księgi.</div>
+
+    <div class="grimoire-open" id="grimoire-cover">
+      <div class="magic-particles" id="book-particles"></div>
+      
+      <!-- Lewa Strona (Spis Treści) -->
+      <div class="g-page g-page-left">
+        <div class="g-toc-title">Spis Treści</div>
+        <button class="toc-btn active-chap" id="btn-chap-particles" onclick="turnBookPage('particles')">Rozdział I: Złote Partykuły</button>
+        <button class="toc-btn" id="btn-chap-tenses" onclick="turnBookPage('tenses')">Rozdział II: Władza nad Czasem</button>
+        <button class="toc-btn" id="btn-chap-other" onclick="turnBookPage('other')">Rozdział III: Inne Prawa Magii</button>
+      </div>
+      
+      <!-- Grzbiet cieniujący środek -->
+      <div class="g-spine"></div>
+      
+      <!-- Prawa Strona (Treść) -->
+      <div class="g-page g-page-right" id="g-page-right">
+        <div class="book-watermark" id="book-watermark">✧</div>
+        <div id="g-content-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KREATOR ZDAŃ -->
+  <div class="page" id="page-zdania">
+    <div class="section-title">✏️ Stół Alchemiczny</div>
+    <div class="section-subtitle">Składaj słowa w zaklęcia. Mistrzyni cię oceni!</div>
+    <div style="max-width:900px; margin: 0 auto;">
+      <div class="builder">
+        <h2>📜 Formuła Zaklęcia</h2>
+        <div style="font-size:14px;color:var(--parchment3);margin-bottom:15px;line-height:1.8;padding:12px 16px;background:rgba(0,0,0,.4);border-radius:8px;border:1px solid rgba(212,175,55,.2)">
+          Schemat pradawny: <b style="color:var(--theme-glow)">Podmiot + wa</b> → <b style="color:var(--theme-glow)">Dopełnienie + wo</b> → <b style="color:var(--theme-glow)">Czasownik</b>
+        </div>
+        <div class="slot-row" id="slot-row"></div>
+        <div id="result-box" style="display:none" class="result-box">
+          <div class="result-jp" id="result-jp"></div>
+          <div class="result-pl" id="result-pl"></div>
+          <div class="result-acts">
+            <button class="btn primary" onclick="speakText(document.getElementById('result-jp').textContent)">🔊 Wymów</button>
+            <button class="btn" onclick="autoOrderSentence()">✨ Wymuś SOV</button>
+            <button class="btn arcane" onclick="checkSyntaxLocal()" id="syntax-btn">🔮 Sprawdź składnię</button>
+            <button class="btn danger" onclick="clearSlots()">🗑️ Wyczyść</button>
+          </div>
+          <div id="correction-area"></div>
+        </div>
+      </div>
+      <div class="builder">
+        <h2>📦 Bank Słów (Szukaj po polsku)</h2>
+        <div class="search-wrap" style="margin-bottom: 20px;"><span class="s-icon">🔍</span><input type="text" id="builder-search" placeholder="Wpisz np. jabłko, jeść, ja..." oninput="filterWordBank()"></div>
+        <div id="word-bank-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT — Mistrzyni -->
+  <div class="page" id="page-chat">
+    <div class="section-title">🔮 Mistrzyni Akemi</div>
+    <div class="section-subtitle">Wielka Magini Biblioteki. Tłumaczy i odpowiada na twoje wezwanie.</div>
+    <div class="chat-container-main">
+      <div class="akemi-portrait">
+        <img src="https://image.pollinations.ai/prompt/Dark%20fantasy%20anime%20female%20wizard%20shadows%20purple%20magic%20intricate%20details%20masterpiece%20dark%20aesthetic%20witch%20hat?width=400&height=600&nologo=true" alt="Mistrzyni Akemi">
+        <div class="akemi-name-tag"><h3>Mistrzyni Akemi</h3><p>Strażniczka Arkanów (Lokalna Magia)</p></div>
+      </div>
+      <div class="chat-layout">
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="msg bot">
+            <div class="msg-avatar"><img src="https://image.pollinations.ai/prompt/Dark%20fantasy%20anime%20female%20wizard%20shadows%20purple%20magic%20intricate%20details%20masterpiece%20dark%20aesthetic%20witch%20hat?width=100&height=100&nologo=true" alt="Akemi"></div>
+            <div>
+              <div class="msg-bubble">
+                *Zamyka świetlistą księgę i spogląda na ciebie z mroku*<br><br>
+                Witaj, adepcie. Jestem <b>Akemi</b>. Działam tu lokalnie i nigdy nie rzucam słów na wiatr (zero halucynacji).<br><br>
+                Napisz do mnie np.: <b>"przetłumacz zdanie ja jem jabłko"</b>. Ułożę to w szyku SOV. Możesz też zapytać o różnicę między <i>wa</i> i <i>ga</i> lub zażądać quizu!
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="quick-btns-container">
+          <div class="quick-btns-scroll">
+            <button class="qb" onclick="quickMsg('Przetłumacz zdanie: ja jem jabłko')">🍎 Tłumacz: jem jabłko</button>
+            <button class="qb" onclick="quickMsg('Zrób mi trudny quiz z gramatyki')">🎯 Losowy Quiz</button>
+            <button class="qb" onclick="quickMsg('Jak działają przymiotniki i- oraz na-?')">📚 Przymiotniki</button>
+            <button class="qb" onclick="quickMsg('Opowiedz mi legendę o kitsune')">🦊 Lore: Kitsune</button>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chat-input" placeholder="Napisz do Mistrzyni..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+          <button class="chat-send" id="chat-send" onclick="sendMsg()">Wyślij</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ULUBIONE -->
+  <div class="page" id="page-ulubione">
+    <div class="section-title">⭐ Skarbiec Wędrowca</div>
+    <div class="section-subtitle">Twoje zapisane glify...</div>
+    <div class="fav-tabs"><div class="fav-tab active" onclick="showFavTab('slowa')">📚 Słowa (<span id="ct-slowa">0</span>)</div></div>
+    <div id="fav-content"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// AUDIO CONTROLS
+// ============================================================================
+let isMuted = false;
+function toggleAudio() {
+    const audio = document.getElementById('bg-ambient');
+    const icon = document.querySelector('#audio-ctrl i');
+    if(isMuted) {
+        audio.volume = 1.0;
+        icon.className = 'fa-solid fa-volume-high';
+        isMuted = false;
+    } else {
+        audio.volume = 0.0;
+        icon.className = 'fa-solid fa-volume-xmark';
+        isMuted = true;
+    }
+}
+
+// ============================================================================
+// INTRO KINOWE & SLAJD POWITALNY
+// ============================================================================
+function openLibraryGates() {
+  const left = document.getElementById('gate-left');
+  const right = document.getElementById('gate-right');
+  const content = document.getElementById('gate-content');
+  const overlay = document.getElementById('cinematic-gates');
+  const slide = document.getElementById('intro-slide');
+  const ambient = document.getElementById('bg-ambient');
+  const audioCtrl = document.getElementById('audio-ctrl');
+
+  left.classList.add('open');
+  right.classList.add('open');
+  content.classList.add('fade');
+
+  // MROCZNY AMBIENT (Głośny, z dostarczonego pliku)
+  ambient.volume = 1.0;
+  ambient.play().catch(e => console.log("Audio zablokowane - kliknij ikonkę głośnika."));
+
+  setTimeout(() => { audioCtrl.classList.add('show'); }, 1500);
+
+  // Zmysłowy Głos Powitalny (bez ucinania)
+  if(window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance("Witaj w Bibliotece Magii. Czekałam na ciebie od bardzo dawna.");
+    u.lang = 'pl-PL'; u.pitch = 0.65; u.rate = 0.8; 
+    const voices = window.speechSynthesis.getVoices();
+    const plVoice = voices.find(v => v.lang === 'pl-PL' && (v.name.includes('Paulina') || v.name.includes('Zosia') || v.name.includes('Female')));
+    if(plVoice) u.voice = plVoice;
+    setTimeout(() => { window.speechSynthesis.speak(u); }, 500);
+  }
+
+  setTimeout(() => {
+    overlay.remove();
+    slide.style.visibility = 'visible';
+    slide.style.opacity = '1';
+  }, 2000);
+}
+
+function enterMainHall() {
+  const slide = document.getElementById('intro-slide');
+  const mainApp = document.getElementById('main-app');
+  slide.style.opacity = '0';
+  setTimeout(() => {
+    slide.style.visibility = 'hidden';
+    mainApp.style.visibility = 'visible';
+    mainApp.style.opacity = '1';
+    document.body.classList.remove('body-locked');
+  }, 1000);
+}
+
+// ============================================================================
+// DANE (Wklej tutaj swoje 248 słówek)
+// ============================================================================
+const CATS=[ {id:'all',label:'Wszystkie',color:'#d4af37'}, {id:'cz1',label:'Czasowniki Gr.1',color:'#22c55e'}, {id:'cz2',label:'Czasowniki Gr.2',color:'#10b981'}, {id:'dom1',label:'Rzeczy Codzienne',color:'#06b6d4'}, {id:'nat1',label:'Natura i Świat',color:'#3b82f6'}, {id:'ani1',label:'Isekai / Anime',color:'#a855f7'}, {id:'extra',label:'Gramatyka',color:'#f59e0b'}, ];
+const D=[ 
+  {cat:'cz1',e:'🍚',r:'taberu',m:'tabemasu',pl:'jeść',en:'to eat',ex:'Ringo wo tabemasu.',expl:'Jem jabłko.',ety:'rdzeń "tabe"',fun:'Pierwsze słowo!',part:'verb'}, 
+  {cat:'cz1',e:'🥤',r:'nomu',m:'nomimasu',pl:'pić',en:'to drink',ex:'Mizu wo nomimasu.',expl:'Piję wodę.',ety:'stare słowo',fun:'Nomu-ya = bar',part:'verb'}, 
+  {cat:'cz1',e:'🚶',r:'iku',m:'ikimasu',pl:'iść',en:'to go',ex:'Gakkou ni ikimasu.',expl:'Idę do szkoły.',ety:'najstarszy ruch',fun:'Nieregularny!',part:'verb'}, 
+  {cat:'dom1',e:'🏠',r:'uchi',m:'—',pl:'dom',en:'home',ex:'Uchi ni kaerimasu.',expl:'Wracam do domu.',ety:'uchi = wewnątrz',fun:'Swojski dom',part:'noun'}, 
+  {cat:'dom1',e:'🍎',r:'ringo',m:'—',pl:'jabłko',en:'apple',ex:'Ringo wo tabemasu.',expl:'Jem jabłko.',ety:'od historycznego owocu',fun:'Shinigami uwielbiają jabłka',part:'noun'}, 
+  {cat:'ani1',e:'⚔️',r:'yuusha',m:'—',pl:'bohater',en:'hero',ex:'Yuusha ga teki wo taosu.',expl:'Bohater pokonuje wroga.',ety:'yuu = odwaga',fun:'Z isekai!',part:'noun'} 
+];
+const EXTRAS=[ {r:'watashi',pl:'ja',en:'I',e:'🧑',cat:'extra',part:'subject'}, {r:'anata',pl:'ty',en:'you',e:'👤',cat:'extra',part:'subject'}, {r:'wa',pl:'[temat]',en:'topic marker',e:'📌',cat:'extra',part:'particle'}, {r:'wo',pl:'[obiekt]',en:'object marker',e:'🎯',cat:'extra',part:'particle'}, {r:'ni',pl:'[do/w]',en:'direction/location',e:'📍',cat:'extra',part:'particle'}, {r:'de',pl:'[w/przez]',en:'place of action',e:'🔧',cat:'extra',part:'particle'}, {r:'ga',pl:'[podmiot]',en:'subject marker',e:'⭐',cat:'extra',part:'particle'} ];
+const ALL_WORDS = [...D, ...EXTRAS];
+document.getElementById('nav-count-dict').textContent = ALL_WORDS.length;
+
+// ============================================================================
+// DANE KSIĘGI ARKANÓW 
+// ============================================================================
+const BOOK_CHAPTERS = {
+  particles: {
+    title: "Złote Partykuły", theme: "gold", seal: "✧",
+    entries: [
+      {r:'は', r_r:'wa', t:'Runa Tematu (WA)', d:'Wyznacza ogólny temat zdania.', ex:'Watashi <b>wa</b> yuusha desu.', expl:'Ja jestem bohaterem.', akemi:'"Wa" to światło sceny.'},
+      {r:'が', r_r:'ga', t:'Runa Podmiotu (GA)', d:'Wyznacza podmiot. Kładzie nacisk na "kto".', ex:'Watashi <b>ga</b> yuusha desu.', expl:'To JA jestem bohaterem.', akemi:'Używaj "ga" w pytaniach o sprawcę.'},
+      {r:'を', r_r:'wo', t:'Runa Celu (WO)', d:'Oznacza dopełnienie bliższe.', ex:'Ringo <b>wo</b> tabemasu.', expl:'Jem jabłko.', akemi:'Traktuj "wo" jako magiczną strzałę wbitą w cel.'},
+      {r:'に', r_r:'ni', t:'Runa Punktu (NI)', d:'Wskazuje cel ruchu, czas.', ex:'Isekai <b>ni</b> ikimasu.', expl:'Idę do innego świata.', akemi:'Kierunek podróży zawsze oznacza NI.'},
+    ]
+  },
+  tenses: {
+    title: "Władza nad Czasem", theme: "fire", seal: "♨",
+    entries: [
+      {r:'ます', r_r:'-masu', t:'Teraźniejszy/Przyszły', d:'Grzeczna forma akcji.', ex:'Ringo wo tabe<b>masu</b>.', expl:'Jem jabłko.', akemi:'Teraźniejszość płonie tak samo jak przyszłość.'},
+      {r:'ません', r_r:'-masen', t:'Przeczenie', d:'Zamień "masu" na "masen".', ex:'Watashi wa iki<b>masen</b>.', expl:'Ja nie idę.', akemi:'Brak akcji to też akcja. "Masen" to tarcza.'},
+      {r:'ました', r_r:'-mashita', t:'Czas Przeszły', d:'Dla zdarzeń, które już minęły.', ex:'Hon wo yomi<b>mashita</b>.', expl:'Przeczytałem książkę.', akemi:'Popioły przeszłości wyraża "mashita".'}
+    ]
+  },
+  other: {
+    title: "Inne Prawa Magii", theme: "nature", seal: "❀",
+    entries: [
+      {r:'い/な', r_r:'-i / -na', t:'Królowe Przymiotników', d:'Podział przymiotników na i- oraz na-.', ex:'Atarashi<b>i</b> hon.', expl:'Nowa książka.', akemi:'Przymiotniki "i" rosną i odmieniają się same.'},
+      {r:'たい', r_r:'-tai', t:'Zaklęcie Życzenia', d:'Służy do wyrażania chęci.', ex:'Isekai ni iki<b>tai</b> desu.', expl:'Chcę pójść do innego świata.', akemi:'"Tai" wyrasta z rdzenia słowa niczym nowy pęd.'},
+    ]
+  }
+};
+
+// ============================================================================
+// SYSTEM WYMOWY (ROMAJI -> KANA)
+// ============================================================================
+const romajiMap = {'masu':'ます','desu':'です','mashita':'ました','masen':'ません','ka':'か','ki':'き','ku':'く','ke':'け','ko':'こ','ga':'が','gi':'ぎ','gu':'ぐ','ge':'げ','go':'ご','sa':'さ','shi':'し','su':'す','se':'せ','so':'そ','za':'ざ','ji':'じ','zu':'ず','ze':'ぜ','zo':'ぞ','ta':'た','chi':'ち','tsu':'つ','te':'て','to':'と','da':'だ','de':'で','do':'ど','na':'な','ni':'に','nu':'ぬ','ne':'ね','no':'の','ha':'は','hi':'ひ','fu':'ふ','he':'へ','ho':'ほ','ba':'ば','bi':'び','bu':'ぶ','be':'べ','bo':'ぼ','pa':'ぱ','pi':'ぴ','pu':'ぷ','pe':'ぺ','po':'ぽ','ma':'ま','mi':'み','mu':'む','me':'め','mo':'も','ya':'や','yu':'ゆ','yo':'よ','ra':'ら','ri':'り','ru':'る','re':'れ','ro':'ろ','wa':'わ','wo':'を','n':'ん','a':'あ','i':'い','u':'う','e':'え','o':'お'};
+function toKana(romaji) {
+  let result = romaji.toLowerCase().replace(/[^a-z]/g, '');
+  let keys = Object.keys(romajiMap).sort((a,b) => b.length - a.length);
+  for(let k of keys) result = result.split(k).join(romajiMap[k]);
+  return result;
+}
+function speakText(t, lang='ja-JP'){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(toKana(t)); u.lang = lang; u.rate = 0.85;
+  const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('ja'));
+  if(voices.length) u.voice = voices[0];
+  speechSynthesis.speak(u);
+}
+
+// ============================================================================
+// NAV, LEKSYKON 3D
+// ============================================================================
+let activeCat='all'; let slots=[]; let favs = new Set(JSON.parse(localStorage.getItem('arcana_favs')||'[]'));
+function saveFavs(){ localStorage.setItem('arcana_favs', JSON.stringify([...favs])); }
+function catInfo(id){ return CATS.find(c => c.id === id) || CATS[1]; }
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  const tabOrder = ['slownik','gramatyka','zdania','chat','ulubione'];
+  document.querySelectorAll('.nav-tab').forEach((t,i) => { if(tabOrder[i] === p) t.classList.add('active'); });
+  
+  if(p === 'ulubione') renderFavs();
+  if(p === 'zdania') { renderWordBank(); }
+  if(p === 'gramatyka') initBook();
+}
+
+const filtRow = document.getElementById('filt-row');
+CATS.forEach(c => {
+  const b = document.createElement('button'); b.className = 'fb' + (c.id === 'all' ? ' active' : ''); b.textContent = c.label;
+  b.onclick = () => { activeCat = c.id; document.querySelectorAll('.fb').forEach(x => x.classList.remove('active')); b.classList.add('active'); renderGrid(); };
+  filtRow.appendChild(b);
+});
+
+function switchTab(btn, tab){
+  event.stopPropagation();
+  const body = btn.closest('.card-body');
+  body.querySelectorAll('.c-tab').forEach(t => t.classList.remove('active'));
+  body.querySelectorAll('.c-tc').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  body.querySelector('[data-tab="' + tab + '"]').classList.add('active');
+}
+
+function makeCard(d){
+  const ci = catInfo(d.cat); const card = document.createElement('div'); card.className = 'card'; const isFav = favs.has(d.r);
+  card.innerHTML = `
+    <div class="card-h">
+      <div class="card-em" style="background:${ci.color}15;border-color:${ci.color}55">${d.e}</div>
+      <div class="card-info"><div class="card-r">${d.r}</div><div class="card-pl">${d.pl} <span style="color:var(--parchment3);font-size:11px">(${d.en})</span></div></div>
+      <div class="card-acts">
+        <button class="icon-btn" onclick="event.stopPropagation();speakText('${d.r}')">🔊</button>
+        <button class="icon-btn ${isFav?'faved':''}" onclick="event.stopPropagation();toggleFav('${d.r}',this)">⭐</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="c-tabs">
+        <div class="c-tab active" onclick="switchTab(this,'info')">📚 Info</div>
+        <div class="c-tab" onclick="switchTab(this,'ex')">💬 Użycie</div>
+        <div class="c-tab" onclick="switchTab(this,'fun')">✨ Sekret</div>
+      </div>
+      <div class="c-tc active" data-tab="info">
+        <div class="info-lbl">Etymologia</div><div class="info-val">${d.ety || 'Pradawny rdzeń'}</div>
+      </div>
+      <div class="c-tc" data-tab="ex">
+        <div class="ex-box"><div class="ex-jp">${d.ex || ''}</div><div class="ex-pl">${d.expl || ''}</div></div>
+        <button class="btn" style="margin-top:8px; font-weight:700" onclick="event.stopPropagation();speakText('${(d.ex||'').replace(/'/g,"\\'")}')">🔊 Wymów zdanie</button>
+      </div>
+      <div class="c-tc" data-tab="fun">
+        <div class="fun-box">💡 ${d.fun || 'Brak sekretów w zwojach'}</div>
+      </div>
+    </div>`;
+  card.addEventListener('click', function(e){
+    if(e.target.closest('button') || e.target.closest('.c-tabs')) return;
+    this.classList.toggle('open');
+  });
+  return card;
+}
+
+function renderGrid(){
+  const q = document.getElementById('search').value.toLowerCase();
+  let filtered = ALL_WORDS.filter(d => {
+    if(d.cat === 'extra' && activeCat !== 'extra' && activeCat !== 'all') return false; 
+    const mc = activeCat === 'all' || d.cat === activeCat;
+    const mq = !q || d.pl.toLowerCase().includes(q) || d.r.toLowerCase().includes(q);
+    return mc && mq;
+  });
+  document.getElementById('stats-line').textContent = `Zwoje w zasięgu wzroku: ${filtered.length}`;
+  const gridContainer = document.getElementById('grid-container'); gridContainer.innerHTML = '';
+  if(filtered.length === 0) { gridContainer.innerHTML = '<div style="padding:40px; text-align:center; color:var(--parchment3); font-style:italic;">Brak glifów spełniających to zaklęcie...</div>'; return; }
+  const grouped = {};
+  filtered.forEach(d => { const catLabel = catInfo(d.cat).label; if(!grouped[catLabel]) grouped[catLabel] = []; grouped[catLabel].push(d); });
+  for(const [catName, items] of Object.entries(grouped)) {
+      const header = document.createElement('h3'); header.className = 'lexicon-category-title'; header.textContent = `✦ ${catName}`; gridContainer.appendChild(header);
+      const grid = document.createElement('div'); grid.className = 'grid';
+      items.forEach(d => grid.appendChild(makeCard(d))); gridContainer.appendChild(grid);
+  }
+}
+
+function toggleFav(r, btn){
+  if(favs.has(r)){ favs.delete(r); btn.classList.remove('faved'); } else { favs.add(r); btn.classList.add('faved'); }
+  saveFavs(); document.getElementById('fav-count').textContent = favs.size;
+}
+
+// ============================================================================
+// KSIĘGA ARKANÓW (OTWARTA KSIĘGA Z WARSTWOWĄ ZMIANĄ ZAWARTOŚCI)
+// ============================================================================
+let currentChapter = 'particles';
+
+function getChapterHTML(chapterKey) {
+  const data = BOOK_CHAPTERS[chapterKey];
+  let html = `<div class="b-chapter">${data.title}</div>`;
+  data.entries.forEach(e => {
+    html += `<div class="a-entry"><div class="a-rune">${e.r}</div><div class="a-content"><div class="a-title">${e.t} <span style="font-size:14px; color:var(--theme-dark); font-weight:normal;">[${e.r_r}]</span></div><div class="a-desc">${e.d}</div><div class="a-ex"><b>${e.ex}</b><br><span style="color:var(--ink2)">${e.expl}</span></div><div class="a-akemi"><b>🔮 Akemi radzi:</b> ${e.akemi}</div></div></div>`;
+  });
+  return html;
+}
+
+function triggerParticleBurst(theme) {
+    const pContainer = document.getElementById('book-particles');
+    pContainer.classList.remove('is-bursting');
+    void pContainer.offsetWidth; // reflow
+    pContainer.classList.add('is-bursting');
+    
+    pContainer.innerHTML = '';
+    let count = theme === 'fire' ? 30 : (theme === 'nature' ? 25 : 15); 
+    for(let i=0; i<count; i++) {
+        let p = document.createElement('div'); p.className = 'm-particle';
+        let rx = (Math.random() - 0.5) * 2; let ry = (Math.random() - 0.5) * 2;
+        p.style.setProperty('--rx', rx); p.style.setProperty('--ry', ry);
+        pContainer.appendChild(p);
+    }
+}
+
+function turnBookPage(targetChapter) {
+  if(targetChapter === currentChapter) return;
+  
+  document.querySelectorAll('.toc-btn').forEach(btn => btn.classList.remove('active-chap'));
+  document.getElementById('btn-chap-' + targetChapter).classList.add('active-chap');
+
+  const contentArea = document.getElementById('g-content-area');
+  const cover = document.getElementById('grimoire-cover');
+  const watermark = document.getElementById('book-watermark');
+  
+  let theme = BOOK_CHAPTERS[targetChapter].theme;
+  cover.className = 'grimoire-open theme-' + theme;
+  watermark.textContent = BOOK_CHAPTERS[targetChapter].seal;
+  
+  // Efekt przejścia zawartości z blurem
+  contentArea.style.animation = 'none';
+  contentArea.offsetHeight; 
+  
+  contentArea.innerHTML = getChapterHTML(targetChapter);
+  contentArea.style.animation = 'fadeContent 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
+  
+  // Cząsteczki podczas przewracania
+  setTimeout(() => { triggerParticleBurst(theme); }, 100);
+
+  currentChapter = targetChapter;
+  document.getElementById('g-page-right').scrollTo(0,0);
+}
+
+function initBook() {
+  const contentArea = document.getElementById('g-content-area');
+  if (contentArea.innerHTML === '') {
+    contentArea.innerHTML = getChapterHTML('particles');
+    currentChapter = 'particles';
+  }
+}
+
+// ============================================================================
+// KREATOR ZDAŃ 
+// ============================================================================
+function addToSlot(word){ slots.push({...word, id: Date.now()}); renderSlots(); }
+function removeSlot(id){ slots = slots.filter(s => s.id !== id); renderSlots(); }
+function clearSlots(){ slots = []; document.getElementById('correction-area').innerHTML = ''; renderSlots(); }
+function renderSlots(){
+  const row = document.getElementById('slot-row'); const rb = document.getElementById('result-box'); row.innerHTML = '';
+  if(!slots.length){ row.innerHTML = '<span class="slot-ph">Szukaj słów i klikaj je, by budować zaklęcie...</span>'; rb.style.display = 'none'; return; }
+  slots.forEach(s => {
+    const sl = document.createElement('div'); sl.className = 'slot';
+    sl.innerHTML = `${s.e||''} <b>${s.r}</b> <span style="font-size:11px;color:#666">(${s.pl})</span> <span class="rm" onclick="removeSlot(${s.id})">✕</span>`;
+    row.appendChild(sl);
+  });
+  document.getElementById('result-jp').textContent = slots.map(s => s.r).join(' ') + (slots.some(s => s.part === 'verb') ? '.' : '');
+  document.getElementById('result-pl').textContent = slots.map(s => s.pl).join(' ') + (slots.some(s => s.part === 'verb') ? '.' : '');
+  rb.style.display = 'block';
+}
+
+function filterWordBank() {
+  const q = document.getElementById('builder-search').value.toLowerCase();
+  document.querySelectorAll('.word-chip').forEach(chip => { chip.style.display = chip.textContent.toLowerCase().includes(q) ? 'inline-block' : 'none'; });
+}
+
+function renderWordBank(){
+  const content = document.getElementById('word-bank-content'); content.innerHTML = '';
+  const groups = [ {label:'Zaimki & Partykuły', items: EXTRAS}, {label:'Rzeczowniki', items: ALL_WORDS.filter(d => d.part === 'noun')}, {label:'Czasowniki', items: ALL_WORDS.filter(d => d.part === 'verb')} ];
+  groups.forEach(g => {
+    const lbl = document.createElement('div'); lbl.className = 'cat-label'; lbl.textContent = g.label;
+    const bank = document.createElement('div'); bank.className = 'word-bank';
+    g.items.forEach(w => {
+      const chip = document.createElement('div'); chip.className = 'word-chip'; chip.textContent = `${w.e||''} ${w.r} (${w.pl})`;
+      chip.onclick = () => addToSlot({r: w.r, pl: w.pl, e: w.e || '', cat: w.cat, part: w.part || 'noun'});
+      bank.appendChild(chip);
+    });
+    content.appendChild(lbl); content.appendChild(bank);
+  });
+}
+
+function sortAndFixSlots(inputSlots) {
+  let newSlots = [];
+  let subjects = inputSlots.filter(s => s.part === 'subject' || (s.part === 'noun' && ['watashi','anata','kare','kanojo'].includes(s.r)));
+  let verbs = inputSlots.filter(s => s.part === 'verb');
+  let nouns = inputSlots.filter(s => s.part === 'noun' && !subjects.includes(s));
+  let adverbs = inputSlots.filter(s => s.part === 'adverb');
+  let particles = inputSlots.filter(s => s.part === 'particle');
+
+  newSlots.push(...adverbs);
+  if(subjects.length > 0) {
+    newSlots.push(subjects[0]);
+    let waGa = particles.find(p => p.r === 'wa' || p.r === 'ga');
+    if(waGa) { newSlots.push(waGa); particles = particles.filter(p => p !== waGa); } 
+    else { newSlots.push({r:'wa', pl:'[temat]', e:'📌', part:'particle', id:Date.now()}); }
+  }
+  nouns.forEach((n, idx) => {
+    newSlots.push(n);
+    if(['uchi', 'gakkou', 'isekai'].includes(n.r)) {
+      let niDe = particles.find(p => p.r === 'ni' || p.r === 'de');
+      if(niDe) { newSlots.push(niDe); particles = particles.filter(p => p !== niDe); }
+      else { newSlots.push({r:'ni', pl:'[do/w]', e:'📍', part:'particle', id:Date.now()+idx}); }
+    } else {
+      let wo = particles.find(p => p.r === 'wo');
+      if(wo) { newSlots.push(wo); particles = particles.filter(p => p !== wo); }
+      else { newSlots.push({r:'wo', pl:'[obiekt]', e:'🎯', part:'particle', id:Date.now()+idx}); }
+    }
+  });
+  newSlots.push(...particles); newSlots.push(...verbs);
+  return newSlots;
+}
+
+function autoOrderSentence(){
+  if(!slots.length) return;
+  slots = sortAndFixSlots(slots); renderSlots();
+  document.getElementById('correction-area').innerHTML = `<div class="correction-box"><div class="ttl">✨ Ułożono w szyku SOV</div>Podmiot → Dopełnienie → Czasownik.</div>`;
+}
+
+function checkSyntaxLocal(){
+  if(!slots.length) return;
+  document.getElementById('correction-area').innerHTML = `<div class="correction-box"><div class="ttl">🔮 Mistrzyni kiwa głową!</div>Ostateczną moc zdaniu nadaje poprawny czasownik na końcu.</div>`;
+}
+
+// ============================================================================
+// CHAT — MISTRZYNI AKEMI
+// ============================================================================
+function matchPolishWord(w) {
+  w = w.toLowerCase().trim(); if(!w) return null;
+  const conjugations = { 'jem':'jeść', 'jesz':'jeść', 'piję':'pić', 'idę':'iść', 'czytam':'czytać', 'wracam':'wracać', 'jabłko':'jabłko', 'woda':'woda', 'książkę':'książka' };
+  let base = conjugations[w] || w;
+  return ALL_WORDS.find(d => d.pl.toLowerCase() === base || d.pl.toLowerCase().includes(base) || d.pl.toLowerCase() === w);
+}
+
+let currentQuizAnswer = null;
+function sendMsg(){
+  const input = document.getElementById('chat-input'); const msg = input.value.trim().toLowerCase();
+  if(!msg) return;
+  input.value = ''; input.style.height = 'auto';
+  addMsg(msg, 'user'); const btn = document.getElementById('chat-send'); btn.disabled = true; const typingEl = addTyping();
+  
+  setTimeout(() => {
+    let reply = "";
+    if(currentQuizAnswer) {
+       if (msg.includes(currentQuizAnswer)) reply = "✨ *Księga błyszczy złotym światłem* Wspaniale! To całkowicie poprawna odpowiedź.";
+       else reply = `💀 Niestety, zaklęcie prysło... Poprawna odpowiedź to: <b>${currentQuizAnswer}</b>.`;
+       currentQuizAnswer = null;
+    }
+    else if (msg.includes("przetłumacz") || msg.includes("tlumacz")) {
+        let sentence = msg.replace(/przetłumacz( mi)? (zdanie )?/g, "").replace(/[.,?!]/g,"");
+        let wordsToTranslate = sentence.split(" ");
+        let translatedSlots = [], missingWords = [];
+        for(let w of wordsToTranslate) { if(w.length < 2) continue; let found = matchPolishWord(w); if(found) translatedSlots.push(found); else missingWords.push(w); }
+        if(missingWords.length > 0) { reply = `Wybacz, adepcie. Zgodnie z moją zasadą <b>"nie halucynuj"</b>, nie posiadam w zwojach słów na: <b>${missingWords.join(", ")}</b>.`; } 
+        else if (translatedSlots.length === 0) { reply = "Jakie zaklęcie mam przetłumaczyć? Nie podałeś znanych mi słów."; } 
+        else {
+            let fixed = sortAndFixSlots(translatedSlots); let jp = fixed.map(s => s.r).join(" ") + (fixed.some(s => s.part === 'verb') ? '.' : '');
+            reply = `Oto twoje zaklęcie:<br><br><div style="font-size:18px; color:var(--mana-l); font-weight:bold; margin:10px 0;">${jp}</div><button class="btn" style="background:var(--arcane)" onclick="speakText('${jp.replace(/'/g,"\\'")}')">🔊 Wymów</button>`;
+        }
+    } 
+    else if (msg.includes("przymiotnik")) reply = "Mamy i-przymiotniki (np. atarashiI - nowy), które odmieniają się same w czasie. I na-przymiotniki (np. kirei NA - piękny), które potrzebują czasownika 'desu'.";
+    else if (msg.includes("quiz") || msg.includes("trudn")) {
+      const quizzes = [ { q: "Jak powiesz 'Piję wodę'?", a: "mizu wo nomimasu" }, { q: "Jak powiesz 'Wrócę do domu'?", a: "uchi ni kaerimasu" } ];
+      const randomQ = quizzes[Math.floor(Math.random() * quizzes.length)];
+      reply = "🎯 <b>Wyzywam cię na pojedynek umysłów!</b><br>" + randomQ.q; currentQuizAnswer = randomQ.a;
+    }
+    else { reply = "Zgodnie z moją przysięgą — <b>nie halucynuję.</b> Nie odnajduję odpowiedzi na to pytanie.<br><b>Zapytaj mnie:</b><br>✦ <i>Przetłumacz zdanie: ja czytam książkę</i><br>✦ <i>Czym są przymiotniki?</i><br>✦ Albo zażądaj quizu!"; }
+    typingEl.remove(); addMsg(reply, 'bot'); btn.disabled = false;
+  }, 700);
+}
+
+function addMsg(text, role){
+  const msgs = document.getElementById('chat-msgs'); const div = document.createElement('div'); div.className = `msg ${role}`;
+  const formatted = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>');
+  const avatar = role === 'bot' ? '<img src="https://image.pollinations.ai/prompt/Dark%20fantasy%20anime%20female%20wizard%20shadows%20purple%20magic%20intricate%20details%20masterpiece%20dark%20aesthetic%20witch%20hat?width=100&height=100&nologo=true">' : '👤';
+  div.innerHTML = role === 'bot' ? `<div class="msg-avatar">${avatar}</div><div><div class="msg-bubble">${formatted}</div></div>` : `<div><div class="msg-bubble">${formatted}</div></div><div class="msg-avatar" style="font-size:20px">${avatar}</div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight; return div;
+}
+
+function addTyping(){
+  const msgs = document.getElementById('chat-msgs'); const div = document.createElement('div'); div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-avatar"><img src="https://image.pollinations.ai/prompt/Dark%20fantasy%20anime%20female%20wizard%20shadows%20purple%20magic%20intricate%20details%20masterpiece%20dark%20aesthetic%20witch%20hat?width=100&height=100&nologo=true"></div><div><div class="msg-bubble">Przeglądam zwoje...</div></div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight; return div;
+}
+
+function quickMsg(t){ document.getElementById('chat-input').value = t; sendMsg(); }
+
+// ============================================================================
+// ULUBIONE
+// ============================================================================
+function showFavTab(tab){ renderFavs(); }
+function renderFavs(){
+  const content = document.getElementById('fav-content');
+  document.getElementById('ct-slowa').textContent = favs.size;
+  const favWords = ALL_WORDS.filter(d => favs.has(d.r));
+  if(!favWords.length){ content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--parchment3)">Skarbiec jest pusty. Kliknij ⭐ w Leksykonie.</div>'; return; }
+  const grid = document.createElement('div'); grid.className = 'fav-grid';
+  favWords.forEach(d => {
+    const card = document.createElement('div'); card.className = 'fav-card';
+    card.innerHTML = `<div class="fav-em">${d.e}</div><div class="fav-r">${d.r}</div><div class="fav-pl">${d.pl}</div>
+    <button class="btn" style="margin-top:6px;justify-content:center" onclick="speakText('${d.r}')">🔊</button>
+    <button class="fav-rm" onclick="favs.delete('${d.r}');saveFavs();renderFavs();document.getElementById('ct-slowa').textContent=favs.size">Wymaż</button>`;
+    grid.appendChild(card);
+  });
+  content.innerHTML = ''; content.appendChild(grid);
+}
+
+// INICJALIZACJA
+(function init(){
+  document.getElementById('fav-count').textContent = favs.size;
+  renderGrid();
+  if(window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
+})();
+</script>
+</body>
+</html>
